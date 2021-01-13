@@ -1,0 +1,94 @@
+FROM ubuntu:18.04
+
+
+RUN apt-get update
+RUN apt-get install -y curl
+RUN curl -s https://packagecloud.io/install/repositories/fdio/release/script.deb.sh | bash
+
+RUN apt-get update
+RUN apt-get install -y git \
+                    cmake \
+		    iptables iproute2 \
+                    build-essential \
+		    pkg-config \
+                    libasio-dev \
+		    zlib1g-dev \
+		    libmemif libmemif-dev \
+                    libcurl4-openssl-dev \
+                    libparc-dev \
+		    libpcre3-dev \
+                    vpp libvppinfra vpp-plugin-core vpp-dev python3-ply python python-ply \
+                    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+WORKDIR /hicn-suite
+
+RUN git clone https://github.com/FDio/hicn hicn-src
+
+WORKDIR /hicn-suite/hicn-build
+
+RUN cmake ../hicn-src -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=ON -DBUILD_HICNPLUGIN=ON
+
+RUN make install
+
+WORKDIR /hicn-suite
+
+# Fetch code to build
+#RUN git clone --depth 1 https://github.com/FDio/hicn.git
+#RUN git clone --depth 1 --branch v1.0.184 https://github.com/CESNET/libyang.git
+#RUN git clone --depth 1 --branch v1.4.70 https://github.com/sysrepo/sysrepo.git
+#RUN git clone --depth 1 --branch v1.1.26 https://github.com/CESNET/libnetconf2.git 
+#RUN git clone --depth 1 --branch v1.1.39 https://github.com/CESNET/netopeer2.git
+RUN git clone https://github.com/CESNET/libyang.git
+RUN git clone https://github.com/sysrepo/sysrepo.git
+RUN git clone https://github.com/CESNET/libnetconf2.git 
+RUN git clone https://github.com/CESNET/netopeer2.git
+
+RUN git clone http://git.libssh.org/projects/libssh.git
+# Build hicn-sysrepo-plugin libnetconf2 netopeer2
+RUN mkdir buildroot-hicn
+RUN mkdir buildroot-libyang
+RUN mkdir buildroot-sysrepo
+RUN mkdir buildroot-libnetconf2
+RUN mkdir buildroot-netopeer2
+RUN mkdir buildroot-libssh
+#RUN apt-get install -y libpcre3-dev libpcre3
+
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV PATH="/usr/local/bin:${PATH}"
+
+
+WORKDIR /hicn-suite/buildroot-libyang
+RUN cmake ../libyang
+RUN make -j 4 install 
+
+WORKDIR /hicn-suite/buildroot-sysrepo
+RUN cmake ../sysrepo
+RUN make -j 4 install
+
+WORKDIR /hicn-suite/buildroot-hicn
+RUN cmake -DSRPD_PLUGINS_PATH=/usr/lib/x86_64-linux-gnu \
+          ../hicn-src/ctrl/sysrepo-plugins
+RUN make -j 4 install 
+
+WORKDIR /hicn-suite/buildroot-libssh
+RUN cmake ../libssh
+RUN make -j 4 install
+
+WORKDIR /hicn-suite/buildroot-libnetconf2
+RUN cmake ../libnetconf2
+RUN make -j 4 install 
+
+WORKDIR /hicn-suite/buildroot-netopeer2
+RUN cmake -DINSTALL_MODULES=ON -DGENERATE_HOSTKEY=ON -MERGE_LISTEN_CONFIG=ON ../netopeer2 
+RUN make -j 4 install
+#CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
+
+RUN sysrepoctl --install /usr/local/lib/modules_yang/hicn.yang
+#ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+WORKDIR / 
+COPY scripts/init.sh /tmp/init.sh
+COPY scripts/startup_template.conf /tmp/startup_template.conf
+ENTRYPOINT ["/bin/bash", "/tmp/init.sh"]
