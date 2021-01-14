@@ -11,8 +11,8 @@ docker-build-multiple: docker-build-base
 run-multiple:
 	@mkdir -p run
 	@rm -rf run/vpp*
-	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./multiple/env.list -id --name vpp1 ${DOCKER_VPP_MULTIPLE1} && sleep 15
-	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./multiple/env.list -id --name vpp2 ${DOCKER_VPP_MULTIPLE2} && sleep 15
+	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./multiple/env.list -id --name hicnvpp1 ${DOCKER_VPP_MULTIPLE1} && sleep 15
+	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./multiple/env.list -id --name hicnvpp2 ${DOCKER_VPP_MULTIPLE2} && sleep 15
 
 .PHONY: test-multiple
 test-multiple:
