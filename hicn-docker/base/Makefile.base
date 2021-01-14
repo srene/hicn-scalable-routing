@@ -1,0 +1,5 @@
+DOCKER_HICN_VPP_BASE=hicn-vpp/base
+
+.PHONY: docker-build-base
+docker-build-base:
+	@cd base && ${DOCKERBUILD} -t ${DOCKER_HICN_VPP_BASE} -f Dockerfile.base .
