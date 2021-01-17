@@ -8,7 +8,7 @@ default: all
 # Include Makefiles
 include base/Makefile.base
 #include docker/allinone/Makefile.allinone
-include multiple/Makefile.multiple
+include network/Makefile.network
 #include docker/strongswan/Makefile.strongswan
 #include docker/vppvpn/Makefile.vppvpn
 #include docker/cups-vppvpn/Makefile.cups-vppvpn
@@ -42,7 +42,7 @@ check:
 	@shellcheck `find . -name "*.sh"`
 
 #docker-build: docker-build-allinone docker-build-multiple docker-build-strongswan docker-build-vppvpn docker-build-cups-vppvpn
-docker build: docker-build-multiple
+docker build: docker-build-network
 
 # Travis
 .PHONY: travis
@@ -61,8 +61,8 @@ travis:
 
 .PHONY: run
 #run: run-allinone run-multiple run-strongswan run-vppvpn run-cups-vppvpn
-run: run-multiple
+run: run-network
 
 .PHONY: test
 #test: test-allinone test-multiple test-strongswan test-vppvpn test-cups-vppvpn
-test: test-multiple
+test: test-network
