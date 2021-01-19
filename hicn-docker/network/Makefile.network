@@ -12,9 +12,9 @@ docker-build-network: docker-build-base
 run-network:
 	@mkdir -p run
 	@sudo rm -rf run/*
-	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./network/env.list -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
-	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./network/env.list -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
-	@docker run -v `pwd`/run:/run --cap-add IPC_LOCK --cap-add NET_ADMIN --env-file ./network/env.list -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 15 
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 --env-file ./network/env.list -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 --env-file ./network/env.list -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 --env-file ./network/env.list -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 15 
 .PHONY: test-network
 test-network:
 	@docker exec -it vpp1 ping -c 5 10.10.2.2

@@ -1,8 +1,9 @@
 FROM hicn-vpp/base
 MAINTAINER s.rene@ucl.ac.uk
 
-COPY startup_prod.conf /tmp/startup_init.conf
+#COPY startup.conf /tmp/startup_init.conf
 COPY startvpp_prod.sh /
-#COPY startup1.conf /etc/vpp/startup1.conf
+COPY startup.conf /etc/vpp/startup.conf
 
 ENTRYPOINT /startvpp_prod.sh
+#ENTRYPOINT 

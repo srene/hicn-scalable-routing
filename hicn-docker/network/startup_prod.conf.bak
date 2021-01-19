@@ -1,12 +1,12 @@
 unix {
   #nodaemon
-  log /var/log/vpp_cons.log
+  log /var/log/vpp.log
   full-coredump
   gid vpp
 
-#  cli-listen /run/vpp/cli-vpp_cons.sock
+  cli-listen /run/vpp/cli.sock
 
-  startup-config /etc/vpp/config_cons.txt
+  startup-config /etc/vpp/config_prod.txt
 
   poll-sleep-usec 100
 }
@@ -16,7 +16,7 @@ api-trace {
 }
 
 api-segment {
-  prefix vpp_cons
+  prefix vpp_prod
 }
 
 socksvr {
