@@ -25,7 +25,9 @@ RUN apt-get install -y git \
 
 WORKDIR /hicn-suite
 
-RUN git clone https://github.com/FDio/hicn hicn-src
+##RUN git clone https://github.com/FDio/hicn hicn-src
+
+COPY ../../hicn-src /hicn-suite/hicn-src
 
 WORKDIR /hicn-suite/hicn-build
 

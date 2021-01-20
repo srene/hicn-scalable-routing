@@ -1,0 +1,3 @@
+[submodule "hicn-src"]
+	path = hicn-src
+	url = https://github.com/srene/hicn.git
