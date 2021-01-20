@@ -1,0 +1,8 @@
+FROM hicn-vpp/base
+MAINTAINER s.rene@ucl.ac.uk
+
+COPY startup2.conf /tmp/startup_init.conf
+COPY startvpp2.sh /
+#COPY startup2.conf /etc/vpp/startup.conf
+
+ENTRYPOINT /startvpp2.sh

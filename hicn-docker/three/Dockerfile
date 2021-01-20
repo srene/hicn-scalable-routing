@@ -1,5 +1,5 @@
 FROM ubuntu:18.04
-MAINTAINER s.rene@ucl.ac.uk
+
 
 RUN apt-get update
 RUN apt-get install -y curl
@@ -8,7 +8,7 @@ RUN curl -s https://packagecloud.io/install/repositories/fdio/release/script.deb
 RUN apt-get update
 RUN apt-get install -y git \
                     cmake \
-		    iptables iproute2 iputils-ping \
+		    iptables iproute2 \
                     build-essential \
 		    pkg-config \
                     libasio-dev \
@@ -25,9 +25,7 @@ RUN apt-get install -y git \
 
 WORKDIR /hicn-suite
 
-RUN git clone https://github.com/srene/hicn hicn-src
-
-#COPY ../../hicn-src /hicn-suite/hicn-src
+RUN git clone https://github.com/FDio/hicn hicn-src
 
 WORKDIR /hicn-suite/hicn-build
 
@@ -90,8 +88,7 @@ RUN make -j 4 install
 
 RUN sysrepoctl --install /usr/local/lib/modules_yang/hicn.yang
 #ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
-WORKDIR /
-
-#COPY startup_init.conf /tmp/startup_init.conf
-COPY startup_template.conf /tmp/startup_template.conf 
-
+WORKDIR / 
+COPY scripts/init.sh /tmp/init.sh
+COPY scripts/startup_template.conf /tmp/startup_template.conf
+ENTRYPOINT ["/bin/bash", "/tmp/init.sh"]
