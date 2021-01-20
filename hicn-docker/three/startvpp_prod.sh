@@ -4,11 +4,8 @@ cat > /etc/vpp/config.txt << EOL
 create memif socket id 2 filename /memif/memif2.sock
 create interface memif id 0 socket-id 2 master
 set int state memif2/0 up
-#set int ip addr memif2/0 192.168.1.2/24
-set int ip addr memif2/0 fd01::1/64
+set int ip addr memif2/0 fd01::2/64
 ip route add fd00:0/64 table via fd01::1 memif2/0
-#set nsim delay 20 ms bandwidth 0.1 gbit packet-size 128
-#nsim output-feature enable-disable memif1/0 
 EOL
 
 sleep 2

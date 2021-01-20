@@ -9,6 +9,7 @@ default: all
 include base/Makefile.base
 #include docker/allinone/Makefile.allinone
 include two/Makefile.two
+include three/Makefile.three
 #include docker/strongswan/Makefile.strongswan
 #include docker/vppvpn/Makefile.vppvpn
 #include docker/cups-vppvpn/Makefile.cups-vppvpn
