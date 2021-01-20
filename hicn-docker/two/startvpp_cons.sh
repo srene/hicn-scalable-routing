@@ -12,9 +12,9 @@ EOL
 sleep 5
 # Run the VPP daemon
 /usr/bin/vpp -c /etc/vpp/startup.conf
-#sleep 20	
+sleep 20	
 
-#vppctl hicn enable b002::1/64
+vppctl hicn enable b002::1/64
 
 # Make sure VPP is *really* running
 typeset -i cnt=60
@@ -23,7 +23,7 @@ until ls -l /run/vpp/cli.sock ; do
        sleep 1
 done
 
-vppctl hicn enable b002::1/64
+#vppctl hicn enable b002::1/64
 #sleep 2
 #hicn-ping-server -n b002::1
 # We do not want to exit, so ...

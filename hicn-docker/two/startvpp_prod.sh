@@ -6,8 +6,8 @@ create interface memif id 0 socket-id 1 master
 set int state memif1/0 up
 set int ip addr memif1/0 192.168.1.2/24
 set int ip addr memif1/0 2001::2/64
-set nsim delay 20 ms bandwidth 0.1 gbit packet-size 128
-nsim output-feature enable-disable memif1/0 
+#set nsim delay 20 ms bandwidth 0.1 gbit packet-size 128
+#nsim output-feature enable-disable memif1/0 
 EOL
 
 sleep 2
