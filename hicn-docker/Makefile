@@ -10,9 +10,7 @@ include base/Makefile.base
 #include docker/allinone/Makefile.allinone
 include two/Makefile.two
 include three/Makefile.three
-#include docker/strongswan/Makefile.strongswan
-#include docker/vppvpn/Makefile.vppvpn
-#include docker/cups-vppvpn/Makefile.cups-vppvpn
+include network/Makefile.network
 
 # Setup proxies for docker build
 ifeq ($(HTTP_PROXY),)
@@ -43,27 +41,27 @@ check:
 	@shellcheck `find . -name "*.sh"`
 
 #docker-build: docker-build-allinone docker-build-multiple docker-build-strongswan docker-build-vppvpn docker-build-cups-vppvpn
-docker build: docker-build-two
+#docker build: docker-build-two docker-build-three docker-build-network
 
 # Travis
-.PHONY: travis
-travis:
-	@echo "=> TRAVIS: $$TRAVIS_BUILD_STAGE_NAME"
-	@echo "Build: #$$TRAVIS_BUILD_NUMBER ($$TRAVIS_BUILD_ID)"
-	@echo "Job: #$$TRAVIS_JOB_NUMBER ($$TRAVIS_JOB_ID)"
-	@echo "AllowFailure: $$TRAVIS_ALLOW_FAILURE TestResult: $$TRAVIS_TEST_RESULT"
-	@echo "Type: $$TRAVIS_EVENT_TYPE PullRequest: $$TRAVIS_PULL_REQUEST"
-	@echo "Repo: $$TRAVIS_REPO_SLUG Branch: $$TRAVIS_BRANCH"
-	@echo "Commit: $$TRAVIS_COMMIT"
-	@echo "$$TRAVIS_COMMIT_MESSAGE"
-	@echo "Range: $$TRAVIS_COMMIT_RANGE"
-	@echo "Files:"
-	@echo "$$(git diff --name-only $$TRAVIS_COMMIT_RANGE)"
+#.PHONY: travis
+#travis:
+#	@echo "=> TRAVIS: $$TRAVIS_BUILD_STAGE_NAME"
+#	@echo "Build: #$$TRAVIS_BUILD_NUMBER ($$TRAVIS_BUILD_ID)"
+#	@echo "Job: #$$TRAVIS_JOB_NUMBER ($$TRAVIS_JOB_ID)"
+#	@echo "AllowFailure: $$TRAVIS_ALLOW_FAILURE TestResult: $$TRAVIS_TEST_RESULT"
+#	@echo "Type: $$TRAVIS_EVENT_TYPE PullRequest: $$TRAVIS_PULL_REQUEST"
+#	@echo "Repo: $$TRAVIS_REPO_SLUG Branch: $$TRAVIS_BRANCH"
+#	@echo "Commit: $$TRAVIS_COMMIT"
+#	@echo "$$TRAVIS_COMMIT_MESSAGE"
+#	@echo "Range: $$TRAVIS_COMMIT_RANGE"
+#	@echo "Files:"
+#	@echo "$$(git diff --name-only $$TRAVIS_COMMIT_RANGE)"
 
-.PHONY: run
+#.PHONY: run
 #run: run-allinone run-multiple run-strongswan run-vppvpn run-cups-vppvpn
-run: run-two
+#run: run-two run-three
 
-.PHONY: test
+#.PHONY: test
 #test: test-allinone test-multiple test-strongswan test-vppvpn test-cups-vppvpn
-test: test-two
+#test: test-two
