@@ -1,0 +1,9 @@
+ <node xmlns="urn:TBD:params:xml:ns:yang:network-topology">
+   <node-id>hicn-node</node-id>
+   <host xmlns="urn:opendaylight:netconf-node-topology">172.17.0.2</host>
+   <port xmlns="urn:opendaylight:netconf-node-topology">830</port>
+   <username xmlns="urn:opendaylight:netconf-node-topology">user</username>
+   <password xmlns="urn:opendaylight:netconf-node-topology">password</password>
+   <tcp-only xmlns="urn:opendaylight:netconf-node-topology">false</tcp-only>
+   <keepalive-delay xmlns="urn:opendaylight:netconf-node-topology">1</keepalive-delay>
+ </node>

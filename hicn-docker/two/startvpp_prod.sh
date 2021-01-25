@@ -23,6 +23,11 @@ until ls -l /run/vpp/cli.sock ; do
        ((cnt=cnt-1)) || exit 1
        sleep 1
 done
+
+sysrepo-plugind -d &
+sleep 5
+netopeer2-server -d -v 0 &
+sleep 5
 #vppctl hicn enable b002::1/64
 #sleep 2
 hicn-ping-server -n b002::1

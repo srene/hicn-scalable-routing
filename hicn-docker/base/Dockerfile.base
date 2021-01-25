@@ -95,3 +95,6 @@ WORKDIR /
 #COPY startup_init.conf /tmp/startup_init.conf
 COPY startup_template.conf /tmp/startup_template.conf 
 
+RUN useradd -p $(openssl passwd -1 password) --create-home --shell /bin/bash --groups sudo user
+
+EXPOSE 22
