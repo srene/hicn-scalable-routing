@@ -1,0 +1,30 @@
+DOCKER_VPP_PROD=hicn-vpp/producer
+DOCKER_VPP_CONS=hicn-vpp/consumer
+DOCKER_VPP_ROUTER1=hicn-vpp/router1
+DOCKER_VPP_ROUTER2=hicn-vpp/router2
+
+
+.PHONY: docker-build-srv6
+docker-build-srv6: docker-build-base
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_PROD} -f Dockerfile.prod .
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_CONS} -f Dockerfile.cons .
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER1} -f Dockerfile.router1 .
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER2} -f Dockerfile.router2 .
+
+.PHONY: run-srv6
+run-srv6:
+	@mkdir -p run
+	@sudo rm -rf run/*
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 15 
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout2 ${DOCKER_VPP_ROUTER2} && sleep 15
+
+.PHONY: test-srv6
+test-srv6:
+	@docker exec -it hicnvppcons hicn-ping-client -b b002::1
+
+.PHONY: clean-network
+clean-srv6:
+	@docker stop hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
+	@docker rm hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
