@@ -2,12 +2,16 @@
 
 cat > /etc/vpp/config.txt << EOL
 create memif socket id 1 filename /memif/memif1.sock
+create memif socket id 2 filename /memif/memif2.sock
 create memif socket id 3 filename /memif/memif3.sock
 create interface memif id 0 socket-id 1 slave
-create interface memif id 0 socket-id 3 slave
+create interface memif id 0 socket-id 2 master
+create interface memif id 0 socket-id 3 master
 set int state memif1/0 up
+set int state memif2/0 up
 set int state memif3/0 up
 set int ip addr memif1/0 fd00::1/64
+set int ip addr memif2/0 fd01::1/64
 set int ip addr memif3/0 fd02::1/64
 EOL
 

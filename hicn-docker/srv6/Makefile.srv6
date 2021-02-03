@@ -2,7 +2,8 @@ DOCKER_VPP_PROD=hicn-vpp/producer
 DOCKER_VPP_CONS=hicn-vpp/consumer
 DOCKER_VPP_ROUTER1=hicn-vpp/router1
 DOCKER_VPP_ROUTER2=hicn-vpp/router2
-
+DOCKER_VPP_ROUTER3=hicn-vpp/router3
+DOCKER_VPP_ROUTER4=hicn-vpp/router4
 
 .PHONY: docker-build-srv6
 docker-build-srv6: docker-build-base
@@ -10,6 +11,8 @@ docker-build-srv6: docker-build-base
 	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_CONS} -f Dockerfile.cons .
 	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER1} -f Dockerfile.router1 .
 	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER2} -f Dockerfile.router2 .
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER3} -f Dockerfile.router3 .
+	@cd srv6 && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER4} -f Dockerfile.router4 .
 
 .PHONY: run-srv6
 run-srv6:
@@ -19,12 +22,14 @@ run-srv6:
 	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
 	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 15 
 	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout2 ${DOCKER_VPP_ROUTER2} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout3 ${DOCKER_VPP_ROUTER3} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout4 ${DOCKER_VPP_ROUTER4} 
 
 .PHONY: test-srv6
 test-srv6:
 	@docker exec -it hicnvppcons hicn-ping-client -b b002::1
 
-.PHONY: clean-network
+.PHONY: clean-srv6
 clean-srv6:
-	@docker stop hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
-	@docker rm hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
+	@docker stop hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2 hicnvpprout3 hicnvpprout4
+	@docker rm hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2 hicnvpprout3 hicnvpprout4
