@@ -9,6 +9,11 @@ set int state memif2/0 up
 set int state memif4/0 up
 set int ip addr memif2/0 fd01::2/64
 set int ip addr memif4/0 fd03::1/64
+ip route add 1::1/128 via fd01::1 memif2/0
+ip route add 3::3/128 via fd03::2 memif4/0
+ip route add 4::4/128 via fd03::2 memif4/0
+ip route add b002::1/64 via fd03::2 memif4/0
+sr localsid address 2::2 behavior end.dx6 memif4/0 fd03::2
 EOL
 
 sleep 5
