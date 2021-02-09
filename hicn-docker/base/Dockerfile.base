@@ -17,7 +17,7 @@ RUN apt-get install -y git \
                     libcurl4-openssl-dev \
                     libparc-dev \
 		    libpcre3-dev \
-                    vpp libvppinfra vpp-plugin-core vpp-dev python3-ply python python-ply \
+                    vpp=20.05-release libvppinfra=20.05-release libvppinfra-dev=20.05-release vpp-plugin-core=20.05-release vpp-dev=20.05-release python3-ply python python-ply \
                     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoremove -y \
@@ -25,7 +25,7 @@ RUN apt-get install -y git \
 
 WORKDIR /hicn-suite
 
-RUN git clone https://github.com/srene/hicn hicn-src
+RUN git clone --branch stable/2005 https://github.com/srene/hicn hicn-src
 
 #COPY ../../hicn-src /hicn-suite/hicn-src
 
