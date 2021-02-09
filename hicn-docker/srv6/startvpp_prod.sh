@@ -10,7 +10,7 @@ EOL
 sleep 2
 
 # Run the VPP daemon
-/usr/bin/vpp -c /etc/vpp/startup.conf
+/usr/bin/vpp -c /etc/vpp/startup.conf 2>&1 > vpp.log
 
 sleep 10
 
