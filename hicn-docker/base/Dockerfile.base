@@ -31,7 +31,7 @@ RUN git clone --branch stable/2005 https://github.com/srene/hicn hicn-src
 
 WORKDIR /hicn-suite/hicn-build
 
-RUN cmake ../hicn-src -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=ON -DBUILD_HICNPLUGIN=ON
+RUN cmake ../hicn-src -DCMAKE_C_FLAGS=-Wno-error -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=ON -DBUILD_HICNPLUGIN=ON
 
 RUN make install
 
