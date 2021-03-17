@@ -1,15 +1,12 @@
 #!/bin/bash
 
 cat > /etc/vpp/config.txt << EOL
-create memif socket id 3 filename /memif/memif3.sock
-create interface memif id 0 socket-id 3 slave
-create memif socket id 4 filename /memif/memif4.sock
-create interface memif id 0 socket-id 4 slave
-set int state memif3/0 up
-set int ip addr memif3/0 fd02::2/64
-set int state memif4/0 up
-set int ip addr memif4/0 fd03::2/64
-ip route add fc00::/64 via fd02::1 memif3/0
+create memif socket id 1 filename /memif/memif1.sock
+create interface memif id 0 socket-id 1 slave
+set int state memif1/0 up
+set int ip addr memif1/0 fd00::1/64
+sr localsid address 2::2 behavior end.dx6 host-vpp1out fc01::2
+ip route add ::/0 via fd00::2 memif1/0
 EOL
 
 sleep 2
@@ -43,7 +40,6 @@ done
 
 vppctl -s /run/vpp/cli.sock set int state host-vpp1out up
 vppctl -s /run/vpp/cli.sock set int ip address host-vpp1out fc01::1/64
-vppctl -s /run/vpp/cli.sock sr localsid address 4::4 behavior end.dx6 host-vpp1out fc01::2
 
 # We do not want to exit, so ...
 tail -f /dev/null

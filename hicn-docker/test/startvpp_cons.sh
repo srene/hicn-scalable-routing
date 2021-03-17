@@ -1,29 +1,27 @@
 #!/bin/bash
 
 cat > /etc/vpp/config.txt << EOL
-create memif socket id 3 filename /memif/memif3.sock
-create interface memif id 0 socket-id 3 slave
-create memif socket id 4 filename /memif/memif4.sock
-create interface memif id 0 socket-id 4 slave
-set int state memif3/0 up
-set int ip addr memif3/0 fd02::2/64
-set int state memif4/0 up
-set int ip addr memif4/0 fd03::2/64
-ip route add fc00::/64 via fd02::1 memif3/0
+create memif socket id 1 filename /memif/memif1.sock
+create interface memif id 0 socket-id 1 master
+set int state memif1/0 up
+set int ip addr memif1/0 fd00::2/64
+set sr encaps source addr 1::1
+sr policy add bsid 1::1:999 next 2::2 encap
+sr steer l3 fc01::/64 via bsid 1::1:999
+ip route add 2::2/128 via fd00::1 memif1/0
 EOL
 
-sleep 2
-
+sleep 5
 # Run the VPP daemon
 /usr/bin/vpp -c /etc/vpp/startup.conf > vpp.log 2>&1 &
+sleep 20	
 
-sleep 10
-
+#vppctl hicn enable b002::1/64
 ip link add name vpp1out type veth peer name vpp1host
 ip link set dev vpp1out up
 ip link set dev vpp1host up
-ip -6 addr add fc01::2/64 dev vpp1host
-route add -A inet6 default gw fc01::1
+ip -6 addr add fc00::2/64 dev vpp1host
+route add -A inet6 default gw fc00::1
 
 # Make sure VPP is *really* running
 typeset -i cnt=60
@@ -42,8 +40,8 @@ until vppctl -s /run/vpp/cli.sock show int | grep vpp1out ; do
 done
 
 vppctl -s /run/vpp/cli.sock set int state host-vpp1out up
-vppctl -s /run/vpp/cli.sock set int ip address host-vpp1out fc01::1/64
-vppctl -s /run/vpp/cli.sock sr localsid address 4::4 behavior end.dx6 host-vpp1out fc01::2
+vppctl -s /run/vpp/cli.sock set int ip address host-vpp1out fc00::1/64
+
 
 # We do not want to exit, so ...
 tail -f /dev/null

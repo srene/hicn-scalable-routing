@@ -1,0 +1,32 @@
+DOCKER_VPP_PROD=hicn-vpp/producer
+DOCKER_VPP_CONS=hicn-vpp/consumer
+#DOCKER_VPP_ROUTER1=hicn-vpp/router1
+#DOCKER_VPP_ROUTER2=hicn-vpp/router2
+
+.PHONY: docker-build-test
+docker-build-test: docker-build-base
+	@cd test && ${DOCKERBUILD} -t ${DOCKER_VPP_PROD} -f Dockerfile.prod .
+	@cd test && ${DOCKERBUILD} -t ${DOCKER_VPP_CONS} -f Dockerfile.cons .
+#	@cd test && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER1} -f Dockerfile.router1 .
+#	@cd test && ${DOCKERBUILD} -t ${DOCKER_VPP_ROUTER2} -f Dockerfile.router2 .
+
+.PHONY: run-test
+run-test:
+	@mkdir -p run
+	@sudo rm -rf run/*
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 10
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 10
+#	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 10
+#	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout2 ${DOCKER_VPP_ROUTER2} && sleep 10
+#	@echo $(DOCKER_VPP_ROUTER2)
+
+.PHONY: test-test
+test-test:
+	@docker exec -it hicnvppcons ping fc01::2
+
+.PHONY: clean-test
+clean-test:
+#	@docker stop hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
+#	@docker rm hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
+	@docker stop hicnvppprod hicnvppcons
+	@docker rm hicnvppprod hicnvppcons

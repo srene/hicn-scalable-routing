@@ -12,6 +12,7 @@ include two/Makefile.two
 include three/Makefile.three
 include network/Makefile.network
 include srv6/Makefile.srv6
+include test/Makefile.test
 
 # Setup proxies for docker build
 ifeq ($(HTTP_PROXY),)

@@ -2,7 +2,7 @@ FROM hicn-vpp/base
 MAINTAINER s.rene@ucl.ac.uk
 
 #COPY startup.conf /tmp/startup_init.conf
-COPY startvpp_router3.sh /
+COPY startvpp_router2.sh /
 COPY startup.conf /etc/vpp/startup.conf
 
-ENTRYPOINT /startvpp_router3.sh
+ENTRYPOINT /startvpp_router2.sh

@@ -17,6 +17,7 @@ RUN apt-get install -y git \
                     libcurl4-openssl-dev \
                     libparc-dev \
 		    libpcre3-dev \
+		    inetutils-traceroute net-tools \
 #		    vpp=20.05-release libvppinfra=20.05-release libvppinfra-dev=20.05-release vpp-plugin-core=20.05-release vpp-dev=20.05-release python3-ply python python-ply \
 		    vpp libvppinfra-dev vpp-plugin-core vpp-dev python3-ply python python-ply \
                     --no-install-recommends \
@@ -24,81 +25,4 @@ RUN apt-get install -y git \
     && apt-get autoremove -y \
     && apt-get clean
 
-WORKDIR /hicn-suite
-
-RUN git clone https://github.com/srene/hicn hicn-src
-
-#WORKDIR /hicn-suite/hicn-src
-
-#RUN git checkout 2d33dfd939488b81cc4a23f78f949e72391ef236
-
-#RUN sed -i 's/-Werror/-Wno-error/g' CMakeLists.txt
-#RUN sed -i 's/-Werror/-Wno-error/g' hicn-src/CMakeLists.txt
-#COPY ../../hicn-src /hicn-suite/hicn-src
-
-WORKDIR /hicn-suite/hicn-build
-
-RUN cmake ../hicn-src -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_APPS=ON -DBUILD_HICNPLUGIN=ON
-
-RUN make install
-
-WORKDIR /hicn-suite
-
-# Fetch code to build
-#RUN git clone --depth 1 https://github.com/FDio/hicn.git
-#RUN git clone --depth 1 --branch v1.0.184 https://github.com/CESNET/libyang.git
-#RUN git clone --depth 1 --branch v1.4.70 https://github.com/sysrepo/sysrepo.git
-#RUN git clone --depth 1 --branch v1.1.26 https://github.com/CESNET/libnetconf2.git 
-#RUN git clone --depth 1 --branch v1.1.39 https://github.com/CESNET/netopeer2.git
-RUN git clone https://github.com/CESNET/libyang.git
-RUN git clone https://github.com/sysrepo/sysrepo.git
-RUN git clone https://github.com/CESNET/libnetconf2.git 
-RUN git clone https://github.com/CESNET/netopeer2.git
-
-RUN git clone http://git.libssh.org/projects/libssh.git
-# Build hicn-sysrepo-plugin libnetconf2 netopeer2
-RUN mkdir buildroot-hicn
-RUN mkdir buildroot-libyang
-RUN mkdir buildroot-sysrepo
-RUN mkdir buildroot-libnetconf2
-RUN mkdir buildroot-netopeer2
-RUN mkdir buildroot-libssh
-#RUN apt-get install -y libpcre3-dev libpcre3
-
-ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
-ENV PATH="/usr/local/bin:${PATH}"
-
-
-WORKDIR /hicn-suite/buildroot-libyang
-RUN cmake ../libyang
-RUN make -j 4 install 
-
-WORKDIR /hicn-suite/buildroot-sysrepo
-RUN cmake ../sysrepo
-RUN make -j 4 install
-
-WORKDIR /hicn-suite/buildroot-hicn
-RUN cmake -DSRPD_PLUGINS_PATH=/usr/lib/x86_64-linux-gnu \
-          ../hicn-src/ctrl/sysrepo-plugins
-RUN make -j 4 install 
-
-WORKDIR /hicn-suite/buildroot-libssh
-RUN cmake ../libssh
-RUN make -j 4 install
-
-WORKDIR /hicn-suite/buildroot-libnetconf2
-RUN cmake ../libnetconf2
-RUN make -j 4 install 
-
-WORKDIR /hicn-suite/buildroot-netopeer2
-RUN cmake -DINSTALL_MODULES=ON -DGENERATE_HOSTKEY=ON -MERGE_LISTEN_CONFIG=ON ../netopeer2 
-RUN make -j 4 install
-#CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
-
-RUN sysrepoctl --install /usr/local/lib/modules_yang/hicn.yang
-#ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
-WORKDIR /
-
-#COPY startup_init.conf /tmp/startup_init.conf
-COPY startup_template.conf /tmp/startup_template.conf 
 
