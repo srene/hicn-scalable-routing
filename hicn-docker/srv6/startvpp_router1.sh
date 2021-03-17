@@ -11,7 +11,7 @@ set int ip addr memif1/0 fd00::2/64
 set int ip addr memif3/0 fd02::1/64
 sr localsid address 2::2 behavior end
 ip route add 4::4/128 via fd02::2 memif3/0
-ip route add fc00::/64 via fd00:1/64
+ip route add fc00::/64 via fd00::1 memif1/0
 EOL
 
 sleep 5
