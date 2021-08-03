@@ -1,0 +1,35 @@
+DOCKER_FOUR_PROD=hicn-four/producer
+DOCKER_FOUR_CONS=hicn-four/consumer
+DOCKER_FOUR_ROUT1=hicn-four/router1
+DOCKER_FOUR_ROUT2=hicn-four/router2
+
+IMG_FOUR_PROD=hicnfourprod
+IMG_FOUR_CONS=hicnfourcons
+IMG_FOUR_ROUT1=hicnfourrout1
+IMG_FOUR_ROUT2=hicnfourrout2
+
+.PHONY: docker-build-four
+docker-build-four: docker-build-base
+	@cd four && ${DOCKERBUILD} -t ${DOCKER_FOUR_PROD} -f Dockerfile.prod .
+	@cd four && ${DOCKERBUILD} -t ${DOCKER_FOUR_CONS} -f Dockerfile.cons .
+	@cd four && ${DOCKERBUILD} -t ${DOCKER_FOUR_ROUT1} -f Dockerfile.rout1 .
+	@cd four && ${DOCKERBUILD} -t ${DOCKER_FOUR_ROUT2} -f Dockerfile.rout2 .
+
+.PHONY: run-four
+run-four:
+	@mkdir -p run
+	@sudo rm -rf run/*
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_FOUR_PROD} ${DOCKER_FOUR_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_FOUR_CONS} ${DOCKER_FOUR_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_FOUR_ROUT1} ${DOCKER_FOUR_ROUT1} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_FOUR_ROUT2} ${DOCKER_FOUR_ROUT2}
+
+.PHONY: test-four
+test-four:
+#	@docker exec -it hicnvppprod hicn-ping-server -n b002::1&
+#	@sleep 5
+	@docker exec -it ${IMG_FOUR_CONS} hicn-ping-client -n b002::1
+.PHONY: clean-four
+clean-four:
+	@docker stop ${IMG_FOUR_PROD} ${IMG_FOUR_CONS} ${IMG_FOUR_ROUT1} ${IMG_FOUR_ROUT2}
+	@docker rm ${IMG_FOUR_PROD} ${IMG_FOUR_CONS} ${IMG_FOUR_ROUT1} ${IMG_FOUR_ROUT2}

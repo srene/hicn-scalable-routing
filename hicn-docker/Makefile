@@ -10,6 +10,7 @@ include base/Makefile.base
 #include docker/allinone/Makefile.allinone
 include two/Makefile.two
 include three/Makefile.three
+include four/Makefile.four
 include network/Makefile.network
 include srv6/Makefile.srv6
 include test/Makefile.test
