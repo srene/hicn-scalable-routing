@@ -1,6 +1,11 @@
-DOCKER_VPP_PROD=hicn-vpp/producer
-DOCKER_VPP_CONS=hicn-vpp/consumer
-DOCKER_VPP_ROUT=hicn-vpp/router
+DOCKER_VPP_PROD=hicn-three/producer
+DOCKER_VPP_CONS=hicn-three/consumer
+DOCKER_VPP_ROUT=hicn-three/router
+
+IMG_VPP_PROD=hicnthreeprod
+IMG_VPP_CONS=hicnthreecons
+IMG_VPP_ROUT=hicnthreerout
+
 
 .PHONY: docker-build-three
 docker-build-three: docker-build-base
@@ -11,9 +16,9 @@ docker-build-three: docker-build-base
 run-three:
 	@mkdir -p run
 	@sudo rm -rf run/*
-	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
-	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
-	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout ${DOCKER_VPP_ROUT} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_PROD} ${DOCKER_VPP_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_CONS} ${DOCKER_VPP_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_ROUT} ${DOCKER_VPP_ROUT} && sleep 15
 
 
 
@@ -21,8 +26,8 @@ run-three:
 test-three:
 #	@docker exec -it hicnvppprod hicn-ping-server -n b002::1&
 #	@sleep 5
-	@docker exec -it hicnvppcons hicn-ping-client -n b002::1
+	@docker exec -it ${IMG_VPP_CONS} hicn-ping-client -n b002::1
 .PHONY: clean-three
 clean-three:
-	@docker stop hicnvppprod hicnvppcons hicnvpprout
-	@docker rm hicnvppprod hicnvppcons hicnvpprout
+	@docker stop ${IMG_VPP_PROD} ${IMG_VPP_CONS} ${IMG_VPP_ROUT}
+	@docker rm ${IMG_VPP_PROD} ${IMG_VPP_CONS} ${IMG_VPP_ROUT}

@@ -1,6 +1,8 @@
-DOCKER_VPP_PROD=hicn-vpp/producer
-DOCKER_VPP_CONS=hicn-vpp/consumer
+DOCKER_VPP_PROD=hicn-two/producer
+DOCKER_VPP_CONS=hicn-two/consumer
 
+IMG_NAME_PROD=hicntwoprod
+IMG_NAME_CONS=hicntwocons
 .PHONY: docker-build-two
 docker-build-two: docker-build-base
 	@cd two && ${DOCKERBUILD} -t ${DOCKER_VPP_PROD} -f Dockerfile.prod .
@@ -10,14 +12,14 @@ docker-build-two: docker-build-base
 run-two:
 	@mkdir -p run
 	@sudo rm -rf run/*
-	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
-	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_NAME_PROD} ${DOCKER_VPP_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --device /dev/net/tun:/dev/net/tun --security-opt seccomp=unconfined --cap-add SYS_PTRACE --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_NAME_CONS} ${DOCKER_VPP_CONS}
 .PHONY: test-two
 test-two:
 #	@docker exec -it hicnvppprod hicn-ping-server -n b002::1&
 #	@sleep 5
-	@docker exec -it hicnvppcons hicn-ping-client -n b002::1
+	@docker exec -it ${IMG_NAME_CONS} hicn-ping-client -n b002::1
 .PHONY: clean-two
 clean-two:
-	@docker stop hicnvppprod hicnvppcons
-	@docker rm hicnvppprod hicnvppcons
+	@docker stop ${IMG_NAME_CONS} ${IMG_NAME_PROD}
+	@docker rm ${IMG_NAME_CONS} ${IMG_NAME_PROD}

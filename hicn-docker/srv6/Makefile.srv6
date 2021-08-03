@@ -1,7 +1,12 @@
-DOCKER_VPP_PROD=hicn-vpp/producer
-DOCKER_VPP_CONS=hicn-vpp/consumer
-DOCKER_VPP_ROUTER1=hicn-vpp/router1
-DOCKER_VPP_ROUTER2=hicn-vpp/router2
+DOCKER_VPP_PROD=srv6/producer
+DOCKER_VPP_CONS=srv6/consumer
+DOCKER_VPP_ROUTER1=srv6/router1
+DOCKER_VPP_ROUTER2=srv6/router2
+
+IMG_VPP_PROD=srv6prod
+IMG_VPP_CONS=srv6cons 
+IMG_VPP_ROUT1=srv6rout1
+IMG_VPP_ROUT2=srv6rout2
 
 .PHONY: docker-build-srv6
 docker-build-srv6: docker-build-base
@@ -14,16 +19,18 @@ docker-build-srv6: docker-build-base
 run-srv6:
 	@mkdir -p run
 	@sudo rm -rf run/*
-	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
-	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppcons ${DOCKER_VPP_CONS} && sleep 15
-	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout1 ${DOCKER_VPP_ROUTER1} && sleep 15 
-	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvpprout2 ${DOCKER_VPP_ROUTER2} && sleep 15
+#	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name hicnvppprod ${DOCKER_VPP_PROD} && sleep 15
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_CONS} ${DOCKER_VPP_CONS} && sleep 15
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_ROUT1} ${DOCKER_VPP_ROUTER1} && sleep 15 
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_ROUT2} ${DOCKER_VPP_ROUTER2} && sleep 15
+	@docker run -v `pwd`/memif:/memif --cap-add IPC_LOCK --cap-add NET_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 -id --name ${IMG_VPP_PROD} ${DOCKER_VPP_PROD}
 
 .PHONY: test-srv6
 test-srv6:
-	@docker exec -it hicnvppcons ping fc01::2
+	@docker exec -it ${IMG_VPP_PROD} vppctl -s /run/vpp/cli.sock ping fc01::2 repeat 1
+	@docker exec -it ${IMG_VPP_CONS} ping fc01::2
 
 .PHONY: clean-srv6
 clean-srv6:
-	@docker stop hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
-	@docker rm hicnvppprod hicnvppcons hicnvpprout1 hicnvpprout2
+	@docker stop ${IMG_VPP_PROD} ${IMG_VPP_CONS} ${IMG_VPP_ROUT1} ${IMG_VPP_ROUT2}
+	@docker rm ${IMG_VPP_PROD} ${IMG_VPP_CONS} ${IMG_VPP_ROUT1} ${IMG_VPP_ROUT2}

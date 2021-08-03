@@ -44,6 +44,6 @@ done
 vppctl -s /run/vpp/cli.sock set int state host-vpp1out up
 vppctl -s /run/vpp/cli.sock set int ip address host-vpp1out fc01::1/64
 vppctl -s /run/vpp/cli.sock sr localsid address 4::4 behavior end.dx6 host-vpp1out fc01::2
-
+vppctl -s /run/vpp/cli.sock ping fc01::2 repeat 1
 # We do not want to exit, so ...
 tail -f /dev/null
