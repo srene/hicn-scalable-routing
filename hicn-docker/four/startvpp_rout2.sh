@@ -14,7 +14,7 @@ EOL
 
 sleep 5
 # Run the VPP daemon
-/usr/bin/vpp -c /etc/vpp/startup.conf
+vpp -c /etc/vpp/startup.conf
 sleep 20	
 
 vppctl hicn enable b002::1/64

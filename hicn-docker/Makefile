@@ -8,12 +8,12 @@ default: all
 # Include Makefiles
 include base/Makefile.base
 #include docker/allinone/Makefile.allinone
-include two/Makefile.two
+#include two/Makefile.two
 include three/Makefile.three
-include four/Makefile.four
-include network/Makefile.network
-include srv6/Makefile.srv6
-include test2/Makefile.test
+#include four/Makefile.four
+#include network/Makefile.network
+#include srv6/Makefile.srv6
+#include test2/Makefile.test
 
 # Setup proxies for docker build
 ifeq ($(HTTP_PROXY),)
