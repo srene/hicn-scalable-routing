@@ -8,7 +8,7 @@ default: all
 # Include Makefiles
 include base/Makefile.base
 #include docker/allinone/Makefile.allinone
-#include two/Makefile.two
+include two/Makefile.two
 include three/Makefile.three
 #include four/Makefile.four
 #include network/Makefile.network

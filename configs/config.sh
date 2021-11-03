@@ -16,6 +16,37 @@ until ls -l $CLISOCK1 ; do
        sleep 1
 done
 
+typeset -i cnt=60
+until ls -l $CLISOCK2 ; do
+       ((cnt=cnt-1)) || exit 1
+       sleep 1
+done
+
+typeset -i cnt=60
+until ls -l $CLISOCK3 ; do
+       ((cnt=cnt-1)) || exit 1
+       sleep 1
+done
+
+typeset -i cnt=60
+until ls -l $CLISOCK4 ; do
+       ((cnt=cnt-1)) || exit 1
+       sleep 1
+done
+
+typeset -i cnt=60
+until ls -l $CLISOCK5 ; do
+       ((cnt=cnt-1)) || exit 1
+       sleep 1
+done
+
+typeset -i cnt=60
+until ls -l $CLISOCK6 ; do
+       ((cnt=cnt-1)) || exit 1
+       sleep 1
+done
+
+
 
 #$VPPCTL -s $CLISOCK1 create memif socket id 0 filename /run/vpp/memif0.sock
 $VPPCTL -s $CLISOCK1 create interface memif id 0 socket-id 0 master
@@ -24,13 +55,14 @@ $VPPCTL -s $CLISOCK1 set interface ip address memif0/0 2000::1/64
 sleep 1
 $VPPCTL -s $CLISOCK1 set int state memif0/0 up
 sleep 1
-$VPPCTL -s $CLISOCK1 create loopback interface 
+iface=$($VPPCTL -s $CLISOCK1 create loopback interface)
 sleep 1
-$VPPCTL -s $CLISOCK1 set interface state loop1 up
+echo $iface
+$VPPCTL -s $CLISOCK1 set interface state $iface up
 sleep 1
-$VPPCTL -s $CLISOCK1 set interface ip address loop1 5002::1/64
+$VPPCTL -s $CLISOCK1 set interface ip address $iface 5002::1/64
 sleep 1
-$VPPCTL -s $CLISOCK1 ip neighbor loop1 5002::2 de:ad:00:00:00:00
+$VPPCTL -s $CLISOCK1 ip neighbor $iface 5002::2 de:ad:00:00:00:00
 
 sleep 1
 #$VPPCTL -s $CLISOCK2 create memif socket id 0 filename /run/vpp/memif0.sock
@@ -136,18 +168,18 @@ $VPPCTL -s $CLISOCK1 ip route add b001::/64 via 2000::2 memif0/0
 sleep 1
 $VPPCTL -s $CLISOCK6 ip route add 2002::/64 table 10 via 2005::1 memif5/0
 sleep 1
-$VPPCTL -s $CLISOCK6 ip route add 2003::/64 table 10 via 2005::1 memif5/0
+$VPPCTL -s $CLISOCK6 ip route add 2004::/64 table 10 via 2005::1 memif5/0
 sleep 1
 $VPPCTL -s $CLISOCK3 ip route add 2000::/64 table 10 via 2001::1 memif1/0
 sleep 1
 $VPPCTL -s $CLISOCK4 ip route add 2000::/64 table 10 via 2003::1 memif3/0
 
 #Config srv6
-$VPPCTL -s $CLISOCK2 set sr encaps source addr 1::1
-sleep 1
-$VPPCTL -s $CLISOCK2 sr policy add bsid 1::1:999 next 3::3 encap
-sleep 1
-$VPPCTL -s $CLISOCK2 sr steer l3 b001::/64 via bsid 1::1:999
+#$VPPCTL -s $CLISOCK2 set sr encaps source addr 1::1
+#sleep 1
+#$VPPCTL -s $CLISOCK2 sr policy add bsid 1::1:999 next 3::3 encap
+#sleep 1
+#$VPPCTL -s $CLISOCK2 sr steer l3 b001::/64 via bsid 1::1:999
 
 
 $VPPCTL -s $CLISOCK5 sr localsid address 2::2 behavior end.dx6 memif5/0 2005::2
