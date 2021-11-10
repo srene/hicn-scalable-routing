@@ -18,6 +18,10 @@ package main
 
 import (
 	"context"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"flag"
 	"fmt"
 	"log"
@@ -28,10 +32,12 @@ import (
 	"git.fd.io/govpp.git/adapter/socketclient"
 	"git.fd.io/govpp.git/api"
 	interfaces "git.fd.io/govpp.git/binapi/interface"
-	"git.fd.io/govpp.git/binapi/interface_types"
-	"git.fd.io/govpp.git/binapi/ip"
+	"git.fd.io/govpp.git/binapi/sr"
 	"git.fd.io/govpp.git/binapi/ip_types"
-	"git.fd.io/govpp.git/binapi/mactime"
+//	"git.fd.io/govpp.git/binapi/interface_types"
+	"git.fd.io/govpp.git/binapi/ip"
+//	"git.fd.io/govpp.git/binapi/ip_types"
+//	"git.fd.io/govpp.git/binapi/mactime"
 	"git.fd.io/govpp.git/binapi/vpe"
 	"git.fd.io/govpp.git/core"
 )
@@ -97,171 +103,32 @@ func main() {
 			logError(err, "closing the stream")
 		}
 	}()
-	getVppVersionStream(stream)
-	//idx := createLoopbackStream(stream)
-	//interfaceDumpStream(stream)
-	//addIPAddressStream(stream, idx)
-	//ipAddressDumpStream(stream, idx)
-	//mactimeDump(stream)
-	ipRouteDumpStream(stream)
+
+	result := make(chan int)
+	//fmt.Println("1")
+	//t := time.NewTicker(3 * time.Second)
+
+	var pkt int = 0
+	for {
+		go ipRouteDumpStream(stream,result)
+		//fmt.Println("2")
+		pktTemp := <- result
+		if pkt != pktTemp {
+			fmt.Println("Creating policy for prefix b001:: to 2::2")
+			createPolicy(ch)
+		}
+		pkt = pktTemp
+		time.Sleep(1 * time.Second)
+	}
+
+	//fmt.Println(ipRouteDumpStream(stream))
+
 	return
 }
 
-func getVppVersionStream(stream api.Stream) {
-	fmt.Println("Retrieving version..")
 
-	req := &vpe.ShowVersion{}
-	if err := stream.SendMsg(req); err != nil {
-		logError(err, "ShowVersion sending message")
-		return
-	}
-	recv, err := stream.RecvMsg()
-	if err != nil {
-		logError(err, "ShowVersion receive message")
-		return
-	}
-	recvMsg := recv.(*vpe.ShowVersionReply)
-
-	fmt.Printf("Retrieved VPP version: %q\n", recvMsg.Version)
-	fmt.Println("OK")
-	fmt.Println()
-}
-
-func createLoopbackStream(stream api.Stream) (ifIdx interface_types.InterfaceIndex) {
-	fmt.Println("Creating the loopback interface..")
-
-	req := &interfaces.CreateLoopback{}
-	if err := stream.SendMsg(req); err != nil {
-		logError(err, "CreateLoopback sending message")
-		return
-	}
-	recv, err := stream.RecvMsg()
-	if err != nil {
-		logError(err, "CreateLoopback receive message")
-		return
-	}
-	recvMsg := recv.(*interfaces.CreateLoopbackReply)
-
-	fmt.Printf("Loopback interface index: %v\n", recvMsg.SwIfIndex)
-	fmt.Println("OK")
-	fmt.Println()
-
-	return recvMsg.SwIfIndex
-}
-
-func interfaceDumpStream(stream api.Stream) {
-	fmt.Println("Dumping interfaces..")
-
-	if err := stream.SendMsg(&interfaces.SwInterfaceDump{
-		SwIfIndex: ^interface_types.InterfaceIndex(0),
-	}); err != nil {
-		logError(err, "SwInterfaceDump sending message")
-		return
-	}
-	if err := stream.SendMsg(&vpe.ControlPing{}); err != nil {
-		logError(err, "ControlPing sending message")
-		return
-	}
-
-Loop:
-	for {
-		msg, err := stream.RecvMsg()
-		if err != nil {
-			logError(err, "SwInterfaceDump receiving message ")
-			return
-		}
-
-		switch msg.(type) {
-		case *interfaces.SwInterfaceDetails:
-			fmt.Printf(" - SwInterfaceDetails: %+v\n", msg)
-
-		case *vpe.ControlPingReply:
-			fmt.Printf(" - ControlPingReply: %+v\n", msg)
-			break Loop
-
-		default:
-			logError(err, "unexpected message")
-			return
-		}
-	}
-
-	fmt.Println("OK")
-	fmt.Println()
-}
-
-func addIPAddressStream(stream api.Stream, index interface_types.InterfaceIndex) {
-	fmt.Printf("Adding IP address to the interface index %d..\n", index)
-
-	if err := stream.SendMsg(&interfaces.SwInterfaceAddDelAddress{
-		SwIfIndex: index,
-		IsAdd:     true,
-		Prefix: ip_types.AddressWithPrefix{
-			Address: ip_types.Address{
-				Af: ip_types.ADDRESS_IP4,
-				Un: ip_types.AddressUnionIP4(ip_types.IP4Address{10, 10, 0, uint8(index)}),
-			},
-			Len: 32,
-		},
-	}); err != nil {
-		logError(err, "SwInterfaceAddDelAddress sending message")
-		return
-	}
-
-	recv, err := stream.RecvMsg()
-	if err != nil {
-		logError(err, "SwInterfaceAddDelAddressReply receiving message")
-		return
-	}
-	recvMsg := recv.(*interfaces.SwInterfaceAddDelAddressReply)
-
-	fmt.Printf("Added IP address to interface: %v (return value: %d)\n", index, recvMsg.Retval)
-	fmt.Println("OK")
-	fmt.Println()
-}
-
-func ipAddressDumpStream(stream api.Stream, index interface_types.InterfaceIndex) {
-	fmt.Printf("Dumping IP addresses for interface index %d..\n", index)
-
-	if err := stream.SendMsg(&ip.IPAddressDump{
-		SwIfIndex: index,
-	}); err != nil {
-		logError(err, "IPAddressDump sending message")
-		return
-	}
-	if err := stream.SendMsg(&vpe.ControlPing{}); err != nil {
-		logError(err, "ControlPing sending sending message")
-		return
-	}
-
-Loop:
-	for {
-		msg, err := stream.RecvMsg()
-		if err != nil {
-			logError(err, "IPAddressDump receiving message ")
-			return
-		}
-
-		switch msg.(type) {
-		case *ip.IPAddressDetails:
-			fmt.Printf(" - IPAddressDetails: %+v\n", msg)
-
-		case *vpe.ControlPingReply:
-			fmt.Printf(" - ControlPingReply: %+v\n", msg)
-			break Loop
-
-		default:
-			logError(err, "unexpected message")
-			return
-		}
-	}
-
-	fmt.Println("OK")
-	fmt.Println()
-}
-
-
-func ipRouteDumpStream(stream api.Stream) {
-	fmt.Printf("Dumping IP routes\n")
+func ipRouteDumpStream(stream api.Stream, out chan<- int)  {
+	//fmt.Printf("Dumping IP routes\n")
 
 	if err := stream.SendMsg(&ip.IPRouteDump{
 		ip.IPTable{
@@ -269,11 +136,10 @@ func ipRouteDumpStream(stream api.Stream) {
 		},
 	}); err != nil {
 		logError(err, "IPRouteDump sending message")
-		return
+
 	}
 	if err := stream.SendMsg(&vpe.ControlPing{}); err != nil {
 		logError(err, "ControlPing sending sending message")
-		return
 	}
 
 Loop:
@@ -281,61 +147,33 @@ Loop:
 		msg, err := stream.RecvMsg()
 		if err != nil {
 			logError(err, "IPAddressDump receiving message ")
-			return
 		}
 
 		switch msg.(type) {
 		case *ip.IPRouteDetails:
-			fmt.Printf(" - IPAddressDetails: %+v\n", msg)
+			//fmt.Printf("%+v\n",msg)
+			matched, _ := regexp.MatchString("::/0", fmt.Sprintf("%+v\n",msg))
+			if matched {
+				//fmt.Println(msg)
+				route := getPacket(fmt.Sprintf("%+v\n",msg))
+				out <- route
+				//fmt.Println(route)
+				//return route
+			}
 
+			//break Loop
 		case *vpe.ControlPingReply:
-			fmt.Printf(" - ControlPingReply: %+v\n", msg)
+			//fmt.Printf(" - ControlPingReply: %+v\n", msg)
 			break Loop
 
 		default:
 			logError(err, "unexpected message")
-			return
 		}
 	}
 
-	fmt.Println("OK")
-	fmt.Println()
-}
 
-// Mactime dump uses MactimeDumpReply message as an end of the stream
-// notification instead of the control ping.
-func mactimeDump(stream api.Stream, ) {
-	fmt.Println("Sending mactime dump..")
-
-	if err := stream.SendMsg(&mactime.MactimeDump{}); err != nil {
-		logError(err, "sending mactime dump")
-		return
-	}
-
-Loop:
-	for {
-		msg, err := stream.RecvMsg()
-		if err != nil {
-			logError(err, "MactimeDump receiving message")
-			return
-		}
-
-		switch msg.(type) {
-		case *mactime.MactimeDetails:
-			fmt.Printf(" - MactimeDetails: %+v\n", msg)
-
-		case *mactime.MactimeDumpReply:
-			fmt.Printf(" - MactimeDumpReply: %+v\n", msg)
-			break Loop
-
-		default:
-			logError(err, "unexpected message")
-			return
-		}
-	}
-
-	fmt.Println("OK")
-	fmt.Println()
+	/*fmt.Println("OK")
+	fmt.Println()*/
 }
 
 var errors []error
@@ -343,4 +181,73 @@ var errors []error
 func logError(err error, msg string) {
 	fmt.Printf("ERROR: %s: %v\n", msg, err)
 	errors = append(errors, err)
+}
+
+func getPacket(s string) int {
+	//_, i := utf8.DecodeRuneInString(s)
+	//s[i:]
+	sp := strings.Split(s, " ")
+	//fmt.Println(sp[4])
+	value := strings.Replace(sp[4], "Packets:", "", -1)
+	result,_ :=strconv.Atoi(value)
+	return result
+}
+
+
+func createPolicy(ch api.Channel) {
+	ip_encap,_:= ip_types.ParseIP6Address("1::1")
+	sr_encap := &sr.SrSetEncapSource{
+		EncapsSource: ip_encap,
+	}
+	sr_encap_reply := &sr.SrSetEncapSourceReply{}
+	err := ch.SendRequest(sr_encap).ReceiveReply(sr_encap_reply)
+
+	if err != nil {
+		fmt.Errorf("create_encap: %w\n", err)
+	}
+
+	fmt.Printf("create_encap: ret val %d\n",
+		int(sr_encap_reply.Retval))
+
+	time.Sleep(2 * time.Second)
+	ip,_:= ip_types.ParseIP6Address("1::1:999")
+	ip_sid,_:= ip_types.ParseIP6Address("2::2")
+	sids :=[16]ip_types.IP6Address{ip_sid}
+	sr_create := &sr.SrPolicyAdd{BsidAddr: ip,
+		IsEncap: true,
+		Sids: sr.Srv6SidList{NumSids:1,Sids: sids},
+	}
+	/*sr_create := &sr.SrPolicyAdd{
+	                        BsidAddr: ip,
+	//                              Weight:   1,
+	                                IsEncap:  true,
+	//                              IsSpray:  false,
+	                              FibTable: 1,
+	//                              Sids:     sr.Srv6SidList{Weight: 1},
+	        }*/
+	sr_create_reply := &sr.SrPolicyAddReply{}
+
+	err = ch.SendRequest(sr_create).ReceiveReply(sr_create_reply)
+
+	if err != nil {
+		fmt.Errorf("create_policy: %w\n", err)
+	}
+
+	fmt.Printf("create_policy: ret val %d\n",
+		int(sr_create_reply.Retval))
+
+	ip_steering,_:=ip_types.ParsePrefix("b001::/64")
+	sr_steering := &sr.SrSteeringAddDel{IsDel: false,
+		BsidAddr: ip,
+		Prefix: ip_steering,
+		TrafficType: 6}
+	sr_steering_reply := &sr.SrSteeringAddDelReply{}
+	err = ch.SendRequest(sr_steering).ReceiveReply(sr_steering_reply)
+
+	if err!= nil {
+		fmt.Errorf("create_steering %w\n", err)
+	}
+
+	fmt.Printf("create steering: ret val %d\n",
+		int(sr_steering_reply.Retval))
 }
