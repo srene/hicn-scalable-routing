@@ -8,5 +8,7 @@ gnome-terminal --title="Router 4 - Server " -- tmuxinator start vpp4
 $VPP -c startup2.conf &
 $VPP -c startup5.conf &
 
+gnome-terminal --title="hICN controller " -- tmuxinator start controller
+
 sleep 2
 sudo ./config.sh

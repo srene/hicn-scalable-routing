@@ -104,7 +104,7 @@ func main() {
 		}
 	}()
 
-	result := make(chan int)
+	/*result := make(chan int)
 	//fmt.Println("1")
 	//t := time.NewTicker(3 * time.Second)
 
@@ -119,8 +119,10 @@ func main() {
 		}
 		pkt = pktTemp
 		time.Sleep(1 * time.Second)
-	}
+	}*/
 
+	//createPolicy(ch)
+	updateRoute(ch,"3::3")
 	//fmt.Println(ipRouteDumpStream(stream))
 
 	return
@@ -250,4 +252,34 @@ func createPolicy(ch api.Channel) {
 
 	fmt.Printf("create steering: ret val %d\n",
 		int(sr_steering_reply.Retval))
+}
+
+
+func updateRoute(ch api.Channel, route string) error {
+	ip,_:= ip_types.ParseIP6Address("1::1:999")
+
+	sr_delete := &sr.SrPolicyDel{BsidAddr: ip,
+	}
+	sr_delete_reply := &sr.SrPolicyDelReply{}
+
+	err := ch.SendRequest(sr_delete).ReceiveReply(sr_delete_reply)
+
+	if err != nil {
+		log.Fatalln("ERROR: deleting policy:", err)
+		return err
+	}
+
+	ip_sid,_:= ip_types.ParseIP6Address(route)
+	sids :=[16]ip_types.IP6Address{ip_sid}
+
+	sr_create := &sr.SrPolicyAdd{BsidAddr: ip,
+	IsEncap: true,
+	Sids: sr.Srv6SidList{NumSids:1,Sids: sids},
+	}
+	sr_create_reply := &sr.SrPolicyAddReply{}
+
+	err = ch.SendRequest(sr_create).ReceiveReply(sr_create_reply)
+
+	return err
+
 }

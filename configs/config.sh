@@ -157,21 +157,21 @@ $VPPCTL -s $CLISOCK6 set int state memif5/0 up
 
 #routing
 $VPPCTL -s $CLISOCK2 ip route add 2::2/128 via 2001::2 memif1/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK2 ip route add 3::3/128 via 2003::2 memif3/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK3 ip route add 2::2/128 via 2002::2 memif2/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK4 ip route add 3::3/128 via 2004::2 memif4/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK1 ip route add b001::/64 via 2000::2 memif0/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK6 ip route add 2002::/64 table 10 via 2005::1 memif5/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK6 ip route add 2004::/64 table 10 via 2005::1 memif5/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK3 ip route add 2000::/64 table 10 via 2001::1 memif1/0
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK4 ip route add 2000::/64 table 10 via 2003::1 memif3/0
 
 #Config srv6
@@ -181,7 +181,7 @@ $VPPCTL -s $CLISOCK4 ip route add 2000::/64 table 10 via 2003::1 memif3/0
 #sleep 1
 #$VPPCTL -s $CLISOCK2 sr steer l3 b001::/64 via bsid 1::1:999
 
-
+sleep 1
 $VPPCTL -s $CLISOCK5 sr localsid address 2::2 behavior end.dx6 memif5/0 2005::2
 sleep 1
 $VPPCTL -s $CLISOCK5 sr localsid address 3::3 behavior end.dx6 memif5/0 2005::2
@@ -193,11 +193,11 @@ sleep 1
 $VPPCTL -s $CLISOCK1 hicn enable b001::/64
 sleep 1
 $VPPCTL -s $CLISOCK1 exec /home/sergi/workspace/hicn-scalable-routing/configs/pg.conf
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK3 hicn enable 2::2/128
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK4 hicn enable 3::3/128
-sleep 1
+#sleep 1
 $VPPCTL -s $CLISOCK6 hicn pgen server name b001::1/64 intfc memif5/0
 
 
